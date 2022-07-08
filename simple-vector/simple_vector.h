@@ -40,9 +40,7 @@ public:
     SimpleVector(size_t size, const Type& value)
         : array_(size)
     {
-        for (Iterator it = begin(); it != end(); ++it) {
-            *it = value;
-        }
+        std::fill_n(begin(), end(), value);
     }
 
     // Создаёт вектор из std::initializer_list
@@ -51,9 +49,7 @@ public:
     {
         assert(array_.GetSize() >= init.size());
         size_t i = 0;
-        for (auto v : init) {
-            array_[i++] = v;
-        }
+        std::copy(init.begin(), init.end(), begin());
     }
 
     // Конструктор для резервирования
@@ -93,6 +89,7 @@ public:
     // Если перед вставкой значения вектор был заполнен полностью,
     // вместимость вектора должна увеличиться вдвое, а для вектора вместимостью 0 стать равной 1
     Iterator Insert(ConstIterator pos, const Type& value) {
+        assert(pos >= begin() && pos <= end());
         size_t old_size = array_.GetSize();
         auto index = std::distance(cbegin(), pos);
         GrowIfNeed();
@@ -105,6 +102,7 @@ public:
 
     // move версия
     Iterator Insert(ConstIterator pos, Type&& value) {
+        assert(pos >= begin() && pos <= end());
         size_t old_size = array_.GetSize();
         auto index = std::distance(cbegin(), pos);
         GrowIfNeed();
@@ -126,6 +124,7 @@ public:
 
     // Удаляет элемент вектора в указанной позиции
     Iterator Erase(ConstIterator pos) {
+        assert(pos >= begin() && pos < end());
         auto index = std::distance(cbegin(), pos);
         Iterator it_start = Iterator{&array_[index+1]};
         std::copy(std::make_move_iterator(it_start),
@@ -152,11 +151,13 @@ public:
 
     // Возвращает ссылку на элемент с индексом index
     Type& operator[](size_t index) noexcept {
+        assert(index < GetSize());
         return array_[index];
     }
 
     // Возвращает константную ссылку на элемент с индексом index
     const Type& operator[](size_t index) const noexcept {
+        assert(index < GetSize());
         return array_[index];
     }
 
